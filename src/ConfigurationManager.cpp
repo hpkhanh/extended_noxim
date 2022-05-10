@@ -46,6 +46,9 @@ void loadConfiguration() {
 
     // Initialize global configuration parameters (can be overridden with command-line arguments)
     GlobalParams::verbose_mode = readParam<string>(config, "verbose_mode");
+    GlobalParams::output_mode = outputMode.find(config["output_mode"].as<string>())->second;
+    GlobalParams::output_filename = readParam<string>(config, "output_filename");
+
     GlobalParams::trace_mode = readParam<bool>(config, "trace_mode");
     GlobalParams::trace_filename = readParam<string>(config, "trace_filename");
 
@@ -77,7 +80,8 @@ void loadConfiguration() {
     GlobalParams::packet_injection_rate = readParam<double>(config, "packet_injection_rate");
     GlobalParams::probability_of_retransmission = readParam<double>(config, "probability_of_retransmission");
     GlobalParams::traffic_distribution = readParam<string>(config, "traffic_distribution");
-    GlobalParams::traffic_table_filename = readParam<string>(config, "traffic_table_filename");
+    GlobalParams::traffic_table_filename = readParam<string>(config, "traffic_table_filename", "t.txt");
+    GlobalParams::traffic_trace_filename = readParam<string>(config, "traffic_trace_filename");
     GlobalParams::clock_period_ps = readParam<int>(config, "clock_period_ps");
     GlobalParams::simulation_time = readParam<int>(config, "simulation_time");
     GlobalParams::n_virtual_channels = readParam<int>(config, "n_virtual_channels");
@@ -463,6 +467,11 @@ void parseCmdLine(int arg_num, char *arg_vet[])
 	{
 	    if (!strcmp(arg_vet[i], "-verbose"))
 		GlobalParams::verbose_mode = atoi(arg_vet[++i]);
+        else if (!strcmp(arg_vet[i], "-output_mode")) 
+	    {
+		GlobalParams::output_mode = outputMode.find(arg_vet[++i])->second;
+		GlobalParams::output_filename = arg_vet[++i];
+	    } 
 	    else if (!strcmp(arg_vet[i], "-trace")) 
 	    {
 		GlobalParams::trace_mode = true;
@@ -573,7 +582,13 @@ void parseCmdLine(int arg_num, char *arg_vet[])
 		    GlobalParams::traffic_distribution =
 			TRAFFIC_TABLE_BASED;
 		    GlobalParams::traffic_table_filename = arg_vet[++i];
-		} else if (!strcmp(traffic, "local")) {
+		} 
+        else if (!strcmp(traffic, "trace")) {
+		    GlobalParams::traffic_distribution =
+			TRAFFIC_TRACE_BASED;
+		    GlobalParams::traffic_trace_filename = arg_vet[++i];
+		}
+        else if (!strcmp(traffic, "local")) {
 		    GlobalParams::traffic_distribution = TRAFFIC_LOCAL;
 		    GlobalParams::locality=atof(arg_vet[++i]);
 		}

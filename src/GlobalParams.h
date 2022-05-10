@@ -21,6 +21,7 @@ using namespace std;
 
 #define CONFIG_FILENAME        "config.yaml"
 #define POWER_CONFIG_FILENAME  "power.yaml"
+#define OUTPUT_FILENAME         "noxim_out.txt"
 
 // Define the directions as numbers
 #define DIRECTIONS              4
@@ -69,6 +70,7 @@ using namespace std;
 #define TRAFFIC_TRANSPOSE2     "TRAFFIC_TRANSPOSE2"
 #define TRAFFIC_HOTSPOT        "TRAFFIC_HOTSPOT"
 #define TRAFFIC_TABLE_BASED    "TRAFFIC_TABLE_BASED"
+#define TRAFFIC_TRACE_BASED    "TRAFFIC_TRACE_BASED"
 #define TRAFFIC_BIT_REVERSAL   "TRAFFIC_BIT_REVERSAL"
 #define TRAFFIC_SHUFFLE        "TRAFFIC_SHUFFLE"
 #define TRAFFIC_BUTTERFLY      "TRAFFIC_BUTTERFLY"
@@ -80,6 +82,11 @@ using namespace std;
 #define VERBOSE_LOW            "VERBOSE_LOW"
 #define VERBOSE_MEDIUM         "VERBOSE_MEDIUM"
 #define VERBOSE_HIGH           "VERBOSE_HIGH"
+
+// Output mode
+#define NORMAL_MODE    			0
+#define DEBUG_MODE     			1
+#define EX_STAT_MODE   			2
 
 
 // Wireless MAC constants
@@ -115,6 +122,7 @@ typedef struct {
 
 typedef map<double, pair <double, double> > LinkBitLinePowerConfig;
 
+typedef map<string, int> OutputMode;
 typedef struct {
     map<pair<double, double>, pair<double, double> > crossbar_pm;
     map<int, pair<double, double> > network_interface;
@@ -140,6 +148,8 @@ typedef struct {
 
 struct GlobalParams {
     static string verbose_mode;
+    static int output_mode;
+    static string output_filename;
     static int trace_mode;
     static string trace_filename;
     static string topology;
@@ -160,6 +170,7 @@ struct GlobalParams {
     static double locality;
     static string traffic_distribution;
     static string traffic_table_filename;
+    static string traffic_trace_filename;
     static string config_filename;
     static string power_config_filename;
     static int clock_period_ps;
@@ -186,5 +197,8 @@ struct GlobalParams {
     static bool ascii_monitor;
     static int channel_selection;
 };
+const OutputMode outputMode = {{"NORMAL_MODE", NORMAL_MODE},
+                                {"DEBUG_MODE", DEBUG_MODE},
+                                {"EX_STAT_MODE", EX_STAT_MODE}};
 
 #endif
