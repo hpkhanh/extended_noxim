@@ -62,6 +62,12 @@ int sc_main(int arg_num, char *arg_vet[])
     n->clock(clock);
     n->reset(reset);
 
+    // Change clog stream to output file
+    ofstream output;
+    streambuf * clogbuf = clog.rdbuf();
+    output.open(GlobalParams::output_filename.c_str(), ios::trunc);
+    clog.rdbuf(output.rdbuf());
+
     // Trace signals
     sc_trace_file *tf = NULL;
     if (GlobalParams::trace_mode) {
@@ -101,7 +107,7 @@ int sc_main(int arg_num, char *arg_vet[])
 
     reset.write(0);
     cout << " done! " << endl;
-    cout << " Now running for " << GlobalParams:: simulation_time << " cycles..." << endl;
+    cout << "Now running for " << GlobalParams:: simulation_time << " cycles..." << endl;
     sc_start(GlobalParams::simulation_time, SC_NS);
 
 
@@ -110,7 +116,7 @@ int sc_main(int arg_num, char *arg_vet[])
     cout << "Noxim simulation completed.";
     cout << " (" << sc_time_stamp().to_double() / GlobalParams::clock_period_ps << " cycles executed)" << endl;
     cout << endl;
-//assert(false);
+    //assert(false);
     // Show statistics
     GlobalStats gs(n);
     gs.showStats(std::cout, GlobalParams::detailed);
@@ -137,5 +143,9 @@ int sc_main(int arg_num, char *arg_vet[])
 #ifdef DEADLOCK_AVOIDANCE
 	cout << "***** WARNING: DEADLOCK_AVOIDANCE ENABLED!" << endl;
 #endif
+    // Restor clog stream buffer
+    clog.rdbuf(clogbuf);
+    output.close();
+
     return 0;
 }

@@ -58,43 +58,45 @@ static onullstream LOG;
 inline ostream & operator <<(ostream & os, const Flit & flit)
 {
 
-    if (GlobalParams::verbose_mode == VERBOSE_HIGH) {
+    if (GlobalParams::verbose_mode == VERBOSE_HIGH) 
+    {
+        os << "### FLIT ###" << endl;
+        os << "Source Tile[" << flit.src_id << "]" << endl;
+        os << "Destination Tile[" << flit.dst_id << "]" << endl;
+        switch (flit.flit_type) {
+        case FLIT_TYPE_HEAD:
+            os << "Flit Type is HEAD" << endl;
+            break;
+        case FLIT_TYPE_BODY:
+            os << "Flit Type is BODY" << endl;
+            break;
+        case FLIT_TYPE_TAIL:
+            os << "Flit Type is TAIL" << endl;
+            break;
+        }
+        os << "Sequence no. " << flit.sequence_no << endl;
+        os << "Payload printing not implemented (yet)." << endl;
+        os << "Unix timestamp at packet generation " << flit.
+            timestamp << endl;
+        os << "Total number of hops from source to destination is " <<
+            flit.hop_no << endl;
+    } 
+    else 
+    {
+        os << "(";
+        switch (flit.flit_type) {
+        case FLIT_TYPE_HEAD:
+            os << "H";
+            break;
+        case FLIT_TYPE_BODY:
+            os << "B";
+            break;
+        case FLIT_TYPE_TAIL:
+            os << "T";
+            break;
+        }
 
-	os << "### FLIT ###" << endl;
-	os << "Source Tile[" << flit.src_id << "]" << endl;
-	os << "Destination Tile[" << flit.dst_id << "]" << endl;
-	switch (flit.flit_type) {
-	case FLIT_TYPE_HEAD:
-	    os << "Flit Type is HEAD" << endl;
-	    break;
-	case FLIT_TYPE_BODY:
-	    os << "Flit Type is BODY" << endl;
-	    break;
-	case FLIT_TYPE_TAIL:
-	    os << "Flit Type is TAIL" << endl;
-	    break;
-	}
-	os << "Sequence no. " << flit.sequence_no << endl;
-	os << "Payload printing not implemented (yet)." << endl;
-	os << "Unix timestamp at packet generation " << flit.
-	    timestamp << endl;
-	os << "Total number of hops from source to destination is " <<
-	    flit.hop_no << endl;
-    } else {
-	os << "(";
-	switch (flit.flit_type) {
-	case FLIT_TYPE_HEAD:
-	    os << "H";
-	    break;
-	case FLIT_TYPE_BODY:
-	    os << "B";
-	    break;
-	case FLIT_TYPE_TAIL:
-	    os << "T";
-	    break;
-	}
-
-	os <<  flit.sequence_no << ", " << flit.src_id << "->" << flit.dst_id << " VC " << flit.vc_id << ")";
+        os <<  flit.sequence_no << ", Time: " << flit.timestamp << ", " << flit.src_id << "->" << flit.dst_id << " VC " << flit.vc_id << ")";
     }
 
     return os;

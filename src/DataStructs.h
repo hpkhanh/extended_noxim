@@ -12,6 +12,7 @@
 #define _DATASTRUCS_H__
 
 #include <systemc.h>
+#include <vector>
 #include "GlobalParams.h"
 
 // Coord -- XY coordinates type of the Tile inside the Mesh
@@ -123,6 +124,7 @@ struct Flit {
     FlitType flit_type;	// The flit type (FLIT_TYPE_HEAD, FLIT_TYPE_BODY, FLIT_TYPE_TAIL)
     int sequence_no;		// The sequence number of the flit inside the packet
     int sequence_length;
+    vector <pair<int, double>> route_time; // Pair of router ID - time received at that router for logging
     Payload payload;	// Optional payload
     double timestamp;		// Unix timestamp at packet generation
     int hop_no;			// Current number of hops from source to destination
@@ -140,6 +142,14 @@ struct Flit {
 		&& flit.hop_no == hop_no
 		&& flit.use_low_voltage_path == use_low_voltage_path);
 }};
+
+// Structure used to store information from the traffic trace file
+struct TraceCommunication {
+  int time;
+  int src;          // ID of the source node (PE)
+  int dst;          // ID of the destination node (PE)
+  int num_flit;
+};
 
 
 typedef struct 

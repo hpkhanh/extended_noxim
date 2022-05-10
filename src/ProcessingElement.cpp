@@ -9,6 +9,7 @@
  */
 
 #include "ProcessingElement.h"
+#include <vector>
 
 int ProcessingElement::randInt(int min, int max)
 {
@@ -21,12 +22,16 @@ void ProcessingElement::rxProcess()
     if (reset.read()) {
 	ack_rx.write(0);
 	current_level_rx = 0;
-    } else {
-	if (req_rx.read() == 1 - current_level_rx) {
-	    Flit flit_tmp = flit_rx.read();
-	    current_level_rx = 1 - current_level_rx;	// Negate the old value for Alternating Bit Protocol (ABP)
-	}
-	ack_rx.write(current_level_rx);
+    } 
+    else 
+    {
+        if (req_rx.read() == 1 - current_level_rx) 
+        {
+            Flit flit_tmp = flit_rx.read();
+            printRxFlit(flit_tmp);
+            current_level_rx = 1 - current_level_rx;	// Negate the old value for Alternating Bit Protocol (ABP)
+        }
+        ack_rx.write(current_level_rx);
     }
 }
 
@@ -36,24 +41,27 @@ void ProcessingElement::txProcess()
 	req_tx.write(0);
 	current_level_tx = 0;
 	transmittedAtPreviousCycle = false;
-    } else {
-	Packet packet;
+    } 
+    else 
+    {
+        Packet packet;
 
-	if (canShot(packet)) {
-	    packet_queue.push(packet);
-	    transmittedAtPreviousCycle = true;
-	} else
-	    transmittedAtPreviousCycle = false;
+        if (canShot(packet)) {
+            packet_queue.push(packet);
+            transmittedAtPreviousCycle = true;
+        } else
+            transmittedAtPreviousCycle = false;
 
 
-	if (ack_tx.read() == current_level_tx) {
-	    if (!packet_queue.empty()) {
-		Flit flit = nextFlit();	// Generate a new flit
-		flit_tx->write(flit);	// Send the generated flit
-		current_level_tx = 1 - current_level_tx;	// Negate the old value for Alternating Bit Protocol (ABP)
-		req_tx.write(current_level_tx);
+        if (ack_tx.read() == current_level_tx) {
+            if (!packet_queue.empty()) {
+            Flit flit = nextFlit();	// Generate a new flit
+            printTxFlit(flit);
+            flit_tx->write(flit);	// Send the generated flit
+            current_level_tx = 1 - current_level_tx;	// Negate the old value for Alternating Bit Protocol (ABP)
+            req_tx.write(current_level_tx);
+            }
 	    }
-	}
     }
 }
 
@@ -90,7 +98,8 @@ Flit ProcessingElement::nextFlit()
 bool ProcessingElement::canShot(Packet & packet)
 {
    // assert(false);
-    if(never_transmit) return false;
+    if(never_transmit) 
+        return false;
    
     //if(local_id!=16) return false;
     /* DEADLOCK TEST 
@@ -108,60 +117,86 @@ bool ProcessingElement::canShot(Packet & packet)
     if (local_id%2==0)
 	return false;
 #endif
-    bool shot;
+    bool shot = false;
     double threshold;
 
     double now = sc_time_stamp().to_double() / GlobalParams::clock_period_ps;
 
-    if (GlobalParams::traffic_distribution != TRAFFIC_TABLE_BASED) {
-	if (!transmittedAtPreviousCycle)
-	    threshold = GlobalParams::packet_injection_rate;
-	else
-	    threshold = GlobalParams::probability_of_retransmission;
+    if ((GlobalParams::traffic_distribution != TRAFFIC_TABLE_BASED) && 
+        (GlobalParams::traffic_distribution != TRAFFIC_TRACE_BASED))
+    {
+        if (!transmittedAtPreviousCycle)
+            threshold = GlobalParams::packet_injection_rate;
+        else
+            threshold = GlobalParams::probability_of_retransmission;
 
-	shot = (((double) rand()) / RAND_MAX < threshold);
-	if (shot) {
-	    if (GlobalParams::traffic_distribution == TRAFFIC_RANDOM)
-		    packet = trafficRandom();
-        else if (GlobalParams::traffic_distribution == TRAFFIC_TRANSPOSE1)
-		    packet = trafficTranspose1();
-        else if (GlobalParams::traffic_distribution == TRAFFIC_TRANSPOSE2)
-    		packet = trafficTranspose2();
-        else if (GlobalParams::traffic_distribution == TRAFFIC_BIT_REVERSAL)
-		    packet = trafficBitReversal();
-        else if (GlobalParams::traffic_distribution == TRAFFIC_SHUFFLE)
-		    packet = trafficShuffle();
-        else if (GlobalParams::traffic_distribution == TRAFFIC_BUTTERFLY)
-		    packet = trafficButterfly();
-        else if (GlobalParams::traffic_distribution == TRAFFIC_LOCAL)
-		    packet = trafficLocal();
-        else if (GlobalParams::traffic_distribution == TRAFFIC_ULOCAL)
-		    packet = trafficULocal();
-        else {
-            cout << "Invalid traffic distribution: " << GlobalParams::traffic_distribution << endl;
-            exit(-1);
+        shot = (((double) rand()) / RAND_MAX < threshold);
+        if (shot) {
+            if (GlobalParams::traffic_distribution == TRAFFIC_RANDOM)
+                packet = trafficRandom();
+            else if (GlobalParams::traffic_distribution == TRAFFIC_TRANSPOSE1)
+                packet = trafficTranspose1();
+            else if (GlobalParams::traffic_distribution == TRAFFIC_TRANSPOSE2)
+                packet = trafficTranspose2();
+            else if (GlobalParams::traffic_distribution == TRAFFIC_BIT_REVERSAL)
+                packet = trafficBitReversal();
+            else if (GlobalParams::traffic_distribution == TRAFFIC_SHUFFLE)
+                packet = trafficShuffle();
+            else if (GlobalParams::traffic_distribution == TRAFFIC_BUTTERFLY)
+                packet = trafficButterfly();
+            else if (GlobalParams::traffic_distribution == TRAFFIC_LOCAL)
+                packet = trafficLocal();
+            else if (GlobalParams::traffic_distribution == TRAFFIC_ULOCAL)
+                packet = trafficULocal();
+            else {
+                cout << "Invalid traffic distribution: " << GlobalParams::traffic_distribution << endl;
+                exit(-1);
+            }
         }
-	}
-    } else {			// Table based communication traffic
-	if (never_transmit)
-	    return false;
+    } 
+    else 
+    {			// Table based or trace based communication traffic
+        if (never_transmit)
+            return false;
+        if (GlobalParams::traffic_distribution == TRAFFIC_TABLE_BASED)
+        {
+            bool use_pir = (transmittedAtPreviousCycle == false);
+            vector < pair < int, double > > dst_prob;
+            double threshold =
+                traffic_table->getCumulativePirPor(local_id, (int) now, use_pir, dst_prob);
 
-	bool use_pir = (transmittedAtPreviousCycle == false);
-	vector < pair < int, double > > dst_prob;
-	double threshold =
-	    traffic_table->getCumulativePirPor(local_id, (int) now, use_pir, dst_prob);
-
-	double prob = (double) rand() / RAND_MAX;
-	shot = (prob < threshold);
-	if (shot) {
-	    for (unsigned int i = 0; i < dst_prob.size(); i++) {
-		if (prob < dst_prob[i].second) {
+            double prob = (double) rand() / RAND_MAX;
+            shot = (prob < threshold);
+            if (shot) {
+                for (unsigned int i = 0; i < dst_prob.size(); i++) {
+                if (prob < dst_prob[i].second) 
+                {
                     int vc = randInt(0,GlobalParams::n_virtual_channels-1);
-		    packet.make(local_id, dst_prob[i].first, vc, now, getRandomSize());
-		    break;
-		}
-	    }
-	}
+                    packet.make(local_id, dst_prob[i].first, vc, now, getRandomSize());
+                    break;
+                }
+                }
+            }
+        }
+        else
+        {
+            // Traffic trace based
+            vector<TraceCommunication>* traffic_trace = global_traffic_trace->getTrace(local_id);
+            vector<TraceCommunication>::iterator it;
+            for (it  = traffic_trace->begin(); it < traffic_trace->end(); it++)
+            {
+                if (now == it->time)
+                {
+                    shot = true;
+                    int vc = randInt(0,GlobalParams::n_virtual_channels-1);
+                    packet.make(local_id, it->dst, vc, now, it->num_flit);
+                    traffic_trace->erase(it);
+                    break;
+                }
+                else 
+                    shot = false;
+            }
+        }
     }
 
     return shot;
@@ -492,3 +527,23 @@ unsigned int ProcessingElement::getQueueSize() const
     return packet_queue.size();
 }
 
+void ProcessingElement::printRxFlit(Flit & flit)
+{
+    if (GlobalParams::output_mode > NORMAL_MODE)
+    {
+        clog << sc_time_stamp().to_double() / GlobalParams::clock_period_ps << ": R " << flit << ". Route: ";
+        for (auto it = flit.route_time.begin(); it < flit.route_time.end(); it++)
+        {
+            clog << it->first <<":" << it->second << "->";
+        }
+        clog << endl;
+    }
+}
+
+void ProcessingElement::printTxFlit(Flit & flit)
+{
+    if (GlobalParams::output_mode > NORMAL_MODE)
+    {
+        clog << sc_time_stamp().to_double() / GlobalParams::clock_period_ps << ": S " << flit << endl;
+    }
+}

@@ -118,7 +118,19 @@ void NoC::buildCommon()
 
 	// Check for traffic table availability
 	if (GlobalParams::traffic_distribution == TRAFFIC_TABLE_BASED)
+	{
+		cout << "Loading Traffic Table ...";
 		assert(gttable.load(GlobalParams::traffic_table_filename.c_str()));
+		cout << "Done" << endl;
+	}
+	
+	// Check for traffic trace availability
+	if (GlobalParams::traffic_distribution == TRAFFIC_TRACE_BASED)
+	{
+		cout << "Loading Traffic Trace File ...";
+		assert(gtr_trace.load(GlobalParams::traffic_trace_filename.c_str()));
+		cout << "Done" << endl;
+	}
 
 	// Var to track Hub connected ports
 	hub_connected_ports = (int *) calloc(GlobalParams::hub_configuration.size(), sizeof(int));
@@ -204,6 +216,7 @@ void NoC::buildButterfly()
 			// Tell to the PE its coordinates
 			t[i][j]->pe->local_id = tile_id;
 			t[i][j]->pe->traffic_table = &gttable;	// Needed to choose destination
+			t[i][j]->pe->global_traffic_trace = &gtr_trace;	// Needed to choose destination
 			t[i][j]->pe->never_transmit = true;
 
 			// Map clock and reset
@@ -536,6 +549,11 @@ void NoC::buildButterfly()
 			core[i]->pe->traffic_table = &gttable;	// Needed to choose destination
 			core[i]->pe->never_transmit = (gttable.occurrencesAsSource(core[i]->pe->local_id) == 0);
 		}
+		else if (GlobalParams::traffic_distribution == TRAFFIC_TRACE_BASED)
+		{
+			core[i]->pe->global_traffic_trace = &gtr_trace;	// Needed to choose destination
+			core[i]->pe->never_transmit = (gtr_trace.occurrencesAsSource(core[i]->pe->local_id) == 0);
+		}
 		else
 			core[i]->pe->never_transmit = false;
 
@@ -853,6 +871,7 @@ void NoC::buildBaseline()
 	    // Tell to the PE its coordinates
 	    t[i][j]->pe->local_id = tile_id;
 	    t[i][j]->pe->traffic_table = &gttable;	// Needed to choose destination
+		t[i][j]->pe->global_traffic_trace = &gtr_trace;	// Needed to choose destination
 	    t[i][j]->pe->never_transmit = true;
 
 	    // Map clock and reset
@@ -1299,6 +1318,11 @@ void NoC::buildBaseline()
 	    core[i]->pe->traffic_table = &gttable;	// Needed to choose destination
 	    core[i]->pe->never_transmit = (gttable.occurrencesAsSource(core[i]->pe->local_id) == 0);
 	}
+	else if (GlobalParams::traffic_distribution == TRAFFIC_TRACE_BASED)
+	{
+		core[i]->pe->global_traffic_trace = &gtr_trace;	// Needed to choose destination
+		core[i]->pe->never_transmit = (gtr_trace.occurrencesAsSource(core[i]->pe->local_id) == 0);
+	}
 	else
 	    core[i]->pe->never_transmit = false;
 
@@ -1585,6 +1609,7 @@ void NoC::buildOmega()
 			// Tell to the PE its coordinates
 			t[i][j]->pe->local_id = tile_id;
 			t[i][j]->pe->traffic_table = &gttable;	// Needed to choose destination
+			t[i][j]->pe->global_traffic_trace = &gtr_trace;	// Needed to choose destination
 			t[i][j]->pe->never_transmit = true;
 
 			// Map clock and reset
@@ -1929,6 +1954,11 @@ void NoC::buildOmega()
 			core[i]->pe->traffic_table = &gttable;	// Needed to choose destination
 			core[i]->pe->never_transmit = (gttable.occurrencesAsSource(core[i]->pe->local_id) == 0);
 		}
+		else if (GlobalParams::traffic_distribution == TRAFFIC_TRACE_BASED)
+		{
+			core[i]->pe->global_traffic_trace = &gtr_trace;	// Needed to choose destination
+			core[i]->pe->never_transmit = (gtr_trace.occurrencesAsSource(core[i]->pe->local_id) == 0);
+		}		
 		else
 			core[i]->pe->never_transmit = false;
 
@@ -2206,9 +2236,16 @@ void NoC::buildMesh()
 		{
 			 t[i][j]->pe->traffic_table = &gttable;	// Needed to choose destination
 	   		 t[i][j]->pe->never_transmit = (gttable.occurrencesAsSource(t[i][j]->pe->local_id) == 0);
+
 		}
+		else if (GlobalParams::traffic_distribution == TRAFFIC_TRACE_BASED)
+		{			
+			t[i][j]->pe->global_traffic_trace = &gtr_trace;	// Needed to choose destination			
+			t[i][j]->pe->never_transmit = (gtr_trace.occurrencesAsSource(t[i][j]->pe->local_id) == 0);
+		}		
 		else
 			t[i][j]->pe->never_transmit = false;
+
 
 	    // Map clock and reset
 	    t[i][j]->clock(clock);
@@ -2357,7 +2394,6 @@ void NoC::buildMesh()
 	nop_data[GlobalParams::mesh_dim_x][j].west.write(tmp_NoP);
 
     }
-
 }
 
 Tile *NoC::searchNode(const int id) const

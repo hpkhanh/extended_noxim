@@ -16,6 +16,7 @@
 
 #include "DataStructs.h"
 #include "GlobalTrafficTable.h"
+#include "GlobalTrafficTrace.h"
 #include "Utils.h"
 
 using namespace std;
@@ -62,6 +63,8 @@ SC_MODULE(ProcessingElement)
     Packet trafficULocal();	// Random with locality
 
     GlobalTrafficTable *traffic_table;	// Reference to the Global traffic Table
+    GlobalTrafficTrace *global_traffic_trace;	// Reference to the Global traffic Table
+
     bool never_transmit;	// true if the PE does not transmit any packet 
     //  (valid only for the table based traffic)
 
@@ -76,15 +79,19 @@ SC_MODULE(ProcessingElement)
     int findRandomDestination(int local_id,int hops);
     unsigned int getQueueSize() const;
 
-    // Constructor
-    SC_CTOR(ProcessingElement) {
-	SC_METHOD(rxProcess);
-	sensitive << reset;
-	sensitive << clock.pos();
+    void printRxFlit(Flit & flit);
+    void printTxFlit(Flit & flit);
 
-	SC_METHOD(txProcess);
-	sensitive << reset;
-	sensitive << clock.pos();
+    // Constructor
+    SC_CTOR(ProcessingElement) 
+    {
+        SC_METHOD(rxProcess);
+        sensitive << reset;
+        sensitive << clock.pos();
+
+        SC_METHOD(txProcess);
+        sensitive << reset;
+        sensitive << clock.pos();
     }
 
 };

@@ -56,6 +56,14 @@ void Router::rxProcess()
 		if (!buffer[i][vc].IsFull()) 
 		{
 
+			if (i != DIRECTION_LOCAL)
+				received_flit.hop_no += 1;
+			if (GlobalParams::output_mode > NORMAL_MODE)
+			{				
+				pair<int, double> r_time = make_pair(local_id, (double)(sc_time_stamp().to_double() / GlobalParams::clock_period_ps));
+				received_flit.route_time.push_back(r_time);
+			}
+			
 		    // Store the incoming flit in the circular buffer
 		    buffer[i][vc].Push(received_flit);
 		    LOG << " Flit " << received_flit << " collected from Input[" << i << "][" << vc <<"]" << endl;
