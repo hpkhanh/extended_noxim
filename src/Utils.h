@@ -18,6 +18,7 @@
 #include <iomanip>
 #include <sstream>
 
+// #define DEBUG
 #ifdef DEBUG
 
 #define LOG (std::cout << std::setw(7) << left << sc_time_stamp().to_double() / GlobalParams::clock_period_ps << " " << name() << "::" << __func__<< "() --> ")
@@ -73,6 +74,9 @@ inline ostream & operator <<(ostream & os, const Flit & flit)
         case FLIT_TYPE_TAIL:
             os << "Flit Type is TAIL" << endl;
             break;
+        case FLIT_TYPE_SINGLE:
+            os << "Flit Type is SINGLE" << endl;
+            break;        
         }
         os << "Sequence no. " << flit.sequence_no << endl;
         os << "Payload printing not implemented (yet)." << endl;
@@ -94,6 +98,9 @@ inline ostream & operator <<(ostream & os, const Flit & flit)
         case FLIT_TYPE_TAIL:
             os << "T";
             break;
+        case FLIT_TYPE_SINGLE:
+            os << "HT";
+            break;            
         }
 
         os <<  flit.sequence_no << ", Time: " << flit.timestamp << ", " << flit.src_id << "->" << flit.dst_id << " VC " << flit.vc_id << ")";

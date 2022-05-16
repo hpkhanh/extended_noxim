@@ -38,8 +38,10 @@ void Stats::receivedFlit(const double arrival_time,
 	i = chist.size() - 1;
     }
 
-    if (flit.flit_type == FLIT_TYPE_HEAD)
-	chist[i].delays.push_back(arrival_time - flit.timestamp);
+    if (flit.flit_type & FLIT_TYPE_HEAD)
+	{
+		chist[i].delays.push_back(arrival_time - flit.timestamp);
+	}
 
     chist[i].total_received_flits++;
     chist[i].last_received_flit_time = arrival_time - warm_up_time;
@@ -139,7 +141,7 @@ unsigned int Stats::getReceivedPackets()
     int n = 0;
 
     for (unsigned int i = 0; i < chist.size(); i++)
-	n += chist[i].delays.size();
+		n += chist[i].delays.size();
 
     return n;
 }

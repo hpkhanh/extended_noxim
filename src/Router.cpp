@@ -130,7 +130,7 @@ void Router::txProcess()
 		  Flit flit = buffer[i][vc].Front();
 		  power.bufferRouterFront();
 
-		  if (flit.flit_type == FLIT_TYPE_HEAD) 
+		  if (flit.flit_type & FLIT_TYPE_HEAD) 
 		    {
 		      // prepare data for routing
 		      RouteData route_data;
@@ -220,7 +220,7 @@ void Router::txProcess()
 		      req_tx[o].write(current_level_tx[o]);
 		      buffer[i][vc].Pop();
 
-		      if (flit.flit_type == FLIT_TYPE_TAIL)
+		      if (flit.flit_type & FLIT_TYPE_TAIL)
 		      {
 			  TReservation r;
 			  r.input = i;

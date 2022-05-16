@@ -15,6 +15,18 @@
 #include <vector>
 #include "GlobalParams.h"
 
+
+enum Bits
+{
+    BIT_00 = 1,
+    BIT_01 = 2,
+    BIT_02 = 4,
+    BIT_03 = 8,
+    BIT_04 = 16,
+    BIT_05 = 32,
+    BIT_06 = 64,
+    BIT_07 = 128,
+};
 // Coord -- XY coordinates type of the Tile inside the Mesh
 class Coord {
   public:
@@ -27,7 +39,10 @@ class Coord {
 
 // FlitType -- Flit type enumeration
 enum FlitType {
-    FLIT_TYPE_HEAD, FLIT_TYPE_BODY, FLIT_TYPE_TAIL
+    FLIT_TYPE_HEAD = BIT_00, 
+    FLIT_TYPE_BODY = BIT_01, 
+    FLIT_TYPE_TAIL = BIT_02,
+    FLIT_TYPE_SINGLE = FLIT_TYPE_HEAD | FLIT_TYPE_TAIL
 };
 
 // Payload -- Payload definition

@@ -81,12 +81,19 @@ Flit ProcessingElement::nextFlit()
 
     flit.hub_relay_node = NOT_VALID;
 
-    if (packet.size == packet.flit_left)
-	flit.flit_type = FLIT_TYPE_HEAD;
-    else if (packet.flit_left == 1)
-	flit.flit_type = FLIT_TYPE_TAIL;
+    if (packet.size == 1)
+    {
+        flit.flit_type = FLIT_TYPE_SINGLE;
+    }
     else
-	flit.flit_type = FLIT_TYPE_BODY;
+    {
+        if (packet.size == packet.flit_left)
+        flit.flit_type = FLIT_TYPE_HEAD;
+        else if (packet.flit_left == 1)
+        flit.flit_type = FLIT_TYPE_TAIL;
+        else
+        flit.flit_type = FLIT_TYPE_BODY;
+    }
 
     packet_queue.front().flit_left--;
     if (packet_queue.front().flit_left == 0)
