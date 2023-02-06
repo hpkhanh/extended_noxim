@@ -268,4 +268,6 @@ inline bool YouAreSwitch(int id)
     else return false;
 }
 
+double getCurrentTimeStamp();
+
 #endif
