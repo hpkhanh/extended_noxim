@@ -15,6 +15,7 @@
 #include "Tile.h"
 #include "GlobalRoutingTable.h"
 #include "GlobalTrafficTable.h"
+#include "GlobalTrafficTrace.h"
 #include "Hub.h"
 #include "Channel.h"
 #include "TokenRing.h"

@@ -52,14 +52,13 @@ void ProcessingElement::txProcess()
         } else
             transmittedAtPreviousCycle = false;
 
-
         if (ack_tx.read() == current_level_tx) {
             if (!packet_queue.empty()) {
-            Flit flit = nextFlit();	// Generate a new flit
-            printTxFlit(flit);
-            flit_tx->write(flit);	// Send the generated flit
-            current_level_tx = 1 - current_level_tx;	// Negate the old value for Alternating Bit Protocol (ABP)
-            req_tx.write(current_level_tx);
+                Flit flit = nextFlit();	// Generate a new flit
+                printTxFlit(flit);
+                flit_tx->write(flit);	// Send the generated flit
+                current_level_tx = 1 - current_level_tx;	// Negate the old value for Alternating Bit Protocol (ABP)
+                req_tx.write(current_level_tx);
             }
 	    }
     }
@@ -190,18 +189,20 @@ bool ProcessingElement::canShot(Packet & packet)
             // Traffic trace based
             vector<TraceCommunication>* traffic_trace = global_traffic_trace->getTrace(local_id);
             vector<TraceCommunication>::iterator it;
-            for (it  = traffic_trace->begin(); it < traffic_trace->end(); it++)
-            {
-                if (now == it->time)
+            if (traffic_trace != NULL) {
+                for (it  = traffic_trace->begin(); it < traffic_trace->end(); it++)
                 {
-                    shot = true;
-                    int vc = randInt(0,GlobalParams::n_virtual_channels-1);
-                    packet.make(local_id, it->dst, vc, now, it->num_flit);
-                    traffic_trace->erase(it);
-                    break;
+                    if (now >= it->time)
+                    {
+                        shot = true;
+                        int vc = randInt(0,GlobalParams::n_virtual_channels-1);
+                        packet.make(local_id, it->dst, vc, now, it->num_flit);
+                        traffic_trace->erase(it);
+                        break;
+                    }
+                    else 
+                        shot = false;
                 }
-                else 
-                    shot = false;
             }
         }
     }
@@ -279,7 +280,7 @@ int ProcessingElement::findRandomDestination(int id, int hops)
 }
 
 
-int roulette()
+int ProcessingElement::roulette()
 {
     int slices = GlobalParams::mesh_dim_x + GlobalParams::mesh_dim_y -2;
 

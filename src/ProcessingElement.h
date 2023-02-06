@@ -75,7 +75,7 @@ SC_MODULE(ProcessingElement)
     int getBit(int x, int w);
     double log2ceil(double x);
 
-    int roulett();
+    int roulette();
     int findRandomDestination(int local_id,int hops);
     unsigned int getQueueSize() const;
 
