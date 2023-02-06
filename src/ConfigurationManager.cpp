@@ -96,6 +96,8 @@ void loadConfiguration() {
     GlobalParams::use_winoc = readParam<bool>(config, "use_winoc");
     GlobalParams::winoc_dst_hops = readParam<int>(config, "winoc_dst_hops",0);
     GlobalParams::use_powermanager = readParam<bool>(config, "use_wirxsleep");
+    GlobalParams::switch_delay_ps = readParam<int>(config, "switch_delay_ps", SWITCH_DELAY_PS);
+    GlobalParams::link_delay_ps = readParam<int>(config, "link_delay_ps", LINK_DELAY_PS);
     
 
     set<int> channelSet;
@@ -300,6 +302,9 @@ void checkConfiguration()
 			exit(1);
 		}
 	}
+    else if (GlobalParams::topology==TOPOLOGY_DSB) {
+        
+    }
 	else // other delta topologies
 	{
 		int x = GlobalParams::n_delta_tiles;

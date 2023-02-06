@@ -63,3 +63,5 @@ PowerConfig GlobalParams::power_configuration;
 // out of yaml configuration
 bool GlobalParams::ascii_monitor;
 int GlobalParams::channel_selection;
+int GlobalParams::switch_delay_ps;
+int GlobalParams::link_delay_ps;

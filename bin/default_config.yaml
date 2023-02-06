@@ -13,7 +13,7 @@
 #   BUTTERFLY, BASELINE, and OMEGA are Delta Network topologies
 # topology: MESH
 # X and Y mesh sizes
-toplogy: MESH
+topology: DSB
 mesh_dim_x: 3
 mesh_dim_y: 3
 # number of flits for each router buffer
@@ -116,7 +116,7 @@ RadioChannels:
 
 # SIMULATION PARAMETERS
 #
-clock_period_ps: 1000
+clock_period_ps: 100000
 # duration of reset signal assertion, expressed in cycles
 reset_time: 0
 # overal simulation lenght, expressed in cycles
@@ -141,7 +141,7 @@ use_wirxsleep: false
 #   VERBOSE_LOW
 #   VERBOSE_MEDIUM
 #   VERBOSE_HIGH
-verbose_mode: VERBOSE_OFF
+verbose_mode: VERBOSE_MEDIUM
 
 # Trace
 trace_mode: false
@@ -165,7 +165,10 @@ traffic_distribution: TRAFFIC_TRACE_BASED
 # when traffic table based is specified, use the following
 # configuration file
 traffic_table_filename: ""
-traffic_trace_filename: "traffic_test.txt"
+traffic_trace_filename: "traffic_test_2.txt"
+
+switch_delay_ps: 22000
+link_delay_ps: 2000
 
 output_mode: DEBUG_MODE
-output_filename: "out_test.txt"
+output_filename: "out_test_2.txt"

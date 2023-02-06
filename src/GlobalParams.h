@@ -55,6 +55,8 @@ using namespace std;
 #define TOPOLOGY_BUTTERFLY     "BUTTERFLY"
 #define TOPOLOGY_OMEGA         "OMEGA"
 
+#define TOPOLOGY_DSB            "DSB"
+
 // Routing algorithms
 #define ROUTING_DYAD           "DYAD"
 #define ROUTING_TABLE_BASED    "TABLE_BASED"
@@ -96,6 +98,10 @@ using namespace std;
 #define TOKEN_HOLD             "TOKEN_HOLD"
 #define TOKEN_MAX_HOLD         "TOKEN_MAX_HOLD"
 #define TOKEN_PACKET           "TOKEN_PACKET"
+
+#define SWITCH_DELAY_PS		22000
+#define LINK_DELAY_PS		1000
+
 
 typedef struct {
     pair<double, double> ber;
@@ -196,6 +202,8 @@ struct GlobalParams {
     // out of yaml configuration
     static bool ascii_monitor;
     static int channel_selection;
+    static int switch_delay_ps;
+    static int link_delay_ps;
 };
 const OutputMode outputMode = {{"NORMAL_MODE", NORMAL_MODE},
                                 {"DEBUG_MODE", DEBUG_MODE},
