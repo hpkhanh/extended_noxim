@@ -18,63 +18,75 @@ int BusProcessingElement::randInt(int min, int max)
 }
 
 void BusProcessingElement::rxProcess()
-{
+{    
     if (reset.read()) {
-
+        rtx_bus->release_drive();
+        return;
     } 
-    else 
-    {
-        if (selfSendFlag) {
-            selfSendFlag = false;
-            return;
-        }
-        else {
-            if (flit_rtx.event()) {
-                Flit flit_tmp = flit_rtx.read();
-                printRxFlit(flit_tmp); 
-            }           
-        }
+
+    if (selfSendFlag) {
+        selfSendFlag = false;
+        return;
     }
+
+    if (drive_bus) {
+        rtx_bus->release_drive();
+        drive_bus = false;
+    }
+    if (flit_rtx.event()) {
+        bool valid;
+        Flit flit_tmp;
+        rtx_bus->read_check(flit_tmp, valid);
+        if (valid)
+            printRxFlit(flit_tmp); 
+    }           
 }
 
 void BusProcessingElement::txProcess()
 {
     if (reset.read()) {
-	transmittedAtPreviousCycle = false;
+	    transmittedAtPreviousCycle = false;
+        return;
     } 
-    else 
-    {
-        // if (rtx_mode != WRITE_MODE)
-        //     return;
 
-        Packet packet;
-        if (canShot(packet)) {
-            packet_queue.push(packet);
-            transmittedAtPreviousCycle = true;
-        } else
-            transmittedAtPreviousCycle = false;
-
-        if (!packet_queue.empty()) {
-            // assert("Write collision at PE" && !flit_rtx.event());
-            if (flit_rtx.event())
-                clog << "Write COLLISION on PE " << local_id << " at time " << getCurrentTimeStamp() << endl;
-            else {
-                selfSendFlag = true;
-                Flit flit = nextFlit();	// Generate a new flit
-                printTxFlit(flit);
-                flit_queue.push(flit);
-                eq.notify(GlobalParams::link_delay_ps, SC_PS);
-            }
-        }
+    if (drive_bus) {
+        rtx_bus->release_drive();
+        drive_bus = false;
     }
+
+    Packet packet;
+    if (canShot(packet)) {
+        packet_queue.push(packet);
+        transmittedAtPreviousCycle = true;
+    } else
+        transmittedAtPreviousCycle = false;
+
+    if (!packet_queue.empty()) {
+        selfSendFlag = true;
+        Flit flit = nextFlit();	// Generate a new flit
+        flit_queue.push(flit);
+        eq.notify(SC_ZERO_TIME);
+        printTxFlit(flit);
+        // bool succeed;
+        // rtx_bus->write_drive(flit, succeed);
+        // if (!succeed)
+        //     clog << "Write COLLISION on PE " << local_id << " at time " << getCurrentTimeStamp() << endl;
+
+        // }
+    }
+
 }
 
 void BusProcessingElement::txProcessLink() {
     while (1) {
         wait();
         Flit flit = flit_queue.front();
-        // clog << "Code reached PE " << local_id << " at time " << getCurrentTimeStamp() << flit << endl;
-        flit_rtx.write(flit);	// Send the generated flit
+        bool succeed;
+        rtx_bus->write_drive(flit, succeed);
+        if (!succeed)
+            clog << "Write COLLISION on PE " << local_id << " at time " << getCurrentTimeStamp() << endl;
+        else 
+            drive_bus = true;
         flit_queue.pop();
     }
 }
@@ -111,7 +123,7 @@ Flit BusProcessingElement::nextFlit()
 
     packet_queue.front().flit_left--;
     if (packet_queue.front().flit_left == 0)
-	packet_queue.pop();
+	    packet_queue.pop();
 
     return flit;
 }

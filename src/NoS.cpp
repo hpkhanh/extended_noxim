@@ -64,6 +64,10 @@ void NoS::buildNetwork2() {
 		cout << "Done" << endl;
 	}
 
+    swc = new SwitchController("swc_0", NUM_SWITCHES);
+    
+    swc->clock(clk);
+
     // Connect the switches to the bus
     for (int i = 0; i < NUM_SWITCHES; i++) {
         char sw_name[32];
@@ -75,6 +79,12 @@ void NoS::buildNetwork2() {
         sw[i]->left(main_bus[i]);
         sw[i]->right(main_bus[i+1]);
         sw[i]->mid(side_bus[i]);
+        sw[i]->left_bus = &main_bus[i];
+        sw[i]->right_bus = &main_bus[i+1];
+        sw[i]->mid_bus = &side_bus[i];
+
+        swc->sw_in[i](control_in[i]);
+        swc->sw_out[i](control_out[i]);
     }
 
     for (int i = 0; i < NUM_PES; i++) {
@@ -86,19 +96,30 @@ void NoS::buildNetwork2() {
         pe[i]->clock(clk);
         pe[i]->reset(reset);
         pe[i]->flit_rtx(side_bus[i*2+1]);
+        pe[i]->rtx_bus = &side_bus[i*2+1];
         pe[i]->global_traffic_trace = &gtr_trace;
     }
 
+    // 0 to 1 & 2
+    // sw[1]->input_enable = 0b010;
+    // sw[1]->output_enable = 0b001;
+    // sw[2]->input_enable = 0b100;
+    // sw[2]->output_enable = 0b001;    
+    // sw[3]->input_enable = 0b100;
+    // sw[3]->output_enable = 0b011;
+    // sw[4]->input_enable = 0b100;
+    // sw[4]->output_enable = 0b001; 
+    // sw[5]->input_enable = 0b100;
+    // sw[5]->output_enable = 0b010;
+
+    // 0 to 1
     sw[1]->input_enable = 0b010;
     sw[1]->output_enable = 0b001;
     sw[2]->input_enable = 0b100;
     sw[2]->output_enable = 0b001;    
     sw[3]->input_enable = 0b100;
-    sw[3]->output_enable = 0b011;
-    sw[4]->input_enable = 0b100;
-    sw[4]->output_enable = 0b001; 
-    sw[5]->input_enable = 0b100;
-    sw[5]->output_enable = 0b010;
+    sw[3]->output_enable = 0b010;
+
 
 
 }

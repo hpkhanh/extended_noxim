@@ -6,7 +6,8 @@
 #include "GlobalTrafficTrace.h"
 #include "Switch.h"
 #include "SwitchTest.h"
-#include "PETest.h"
+#include "SwitchController.h"
+#include "BusSignal.h"
 
 #define NUM_PES             3
 #define NUM_SWITCHES        (NUM_PES*2 + 1)
@@ -21,11 +22,12 @@ SC_MODULE(NoS) {
     BusProcessingElement * pe1;
     BusProcessingElement * pe2;
     BusProcessingElement * pe[NUM_PES];
+    SwitchController * swc;
     // PETest * pe1;
     // PETest * pe2;
     // sc_signal<bool> left_in, left_out, mid_in, mid_out, right_in, right_out;
-    sc_signal<Flit> main_bus[NUM_SWITCHES+1];
-    sc_signal<Flit> side_bus[NUM_SWITCHES];
+    bus_signal<Flit> main_bus[NUM_SWITCHES+1];
+    bus_signal<Flit> side_bus[NUM_SWITCHES];
     sc_signal<Flit> left, mid, right;
     sc_signal <sc_bv<NUM_SW_PORTS>> control_in[NUM_SWITCHES];
     sc_signal <sc_bv<NUM_SW_PORTS>> control_out[NUM_SWITCHES];

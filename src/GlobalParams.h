@@ -99,8 +99,11 @@ using namespace std;
 #define TOKEN_MAX_HOLD         "TOKEN_MAX_HOLD"
 #define TOKEN_PACKET           "TOKEN_PACKET"
 
-#define SWITCH_DELAY_PS		22000
-#define LINK_DELAY_PS		1000
+#define SWITCH_DELAY_PS		        22000
+#define LINK_DELAY_PS		        1000
+
+#define NUM_SW_PORTS		        3
+#define NUM_SW_PER_CONTROLLER       100
 
 
 typedef struct {

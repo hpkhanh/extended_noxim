@@ -1,6 +1,7 @@
 #ifndef __BUSPROCESSINGELEMENT_H__
 #define __BUSPROCESSINGELEMENT_H__
 
+#define SC_INCLUDE_DYNAMIC_PROCESSES
 
 #include <queue>
 #include <systemc.h>
@@ -9,6 +10,7 @@
 #include "GlobalTrafficTable.h"
 #include "GlobalTrafficTrace.h"
 #include "Utils.h"
+#include "BusSignal.h"
 
 typedef enum TransceiveMode_e
 {
@@ -33,8 +35,11 @@ SC_MODULE(BusProcessingElement)
     queue < Packet > packet_queue;	// Local queue of packets
     bool transmittedAtPreviousCycle;	// Used for distributions with memory
     bool selfSendFlag;
+    bool drive_bus;
     sc_event_queue eq;
     queue <Flit> flit_queue;
+    bus_signal<Flit> *rtx_bus;
+
 
     // Functions
     void rxProcess();		// The receiving process
@@ -76,6 +81,10 @@ SC_MODULE(BusProcessingElement)
     // Constructor
     SC_CTOR(BusProcessingElement) 
     {
+        transmittedAtPreviousCycle = false;
+        selfSendFlag = false;
+        drive_bus = false;
+        
         SC_METHOD(rxProcess);
         sensitive << reset;
         sensitive << flit_rtx;
